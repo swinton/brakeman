@@ -185,6 +185,19 @@ class Rails6Tests < Minitest::Test
       :user_input => s(:call, s(:params), :[], s(:lit, :argument))
   end
 
+  def test_command_injection_shellwords_escape
+    assert_no_warning :type => :warning,
+      :warning_code => 14,
+      :fingerprint => "f47e314b2e35bbab4dd22b0117bc2115298b5c4e9bd0fbdac2a04cb89caadadb",
+      :warning_type => "Command Injection",
+      :line => 11,
+      :message => /^Possible\ command\ injection/,
+      :confidence => 0,
+      :relative_path => "app/controllers/groups_controller.rb",
+      :code => s(:call, s(:const, :Open3), :capture2, s(:str, "stuff"), s(:str, "blah"), s(:or, s(:call, s(:const, :Shellwords), :escape, s(:call, s(:params), :[], s(:lit, :value))), s(:nil))),
+      :user_input => s(:call, s(:params), :[], s(:lit, :value))
+  end
+
   def test_mass_assignment_permit_bang_1
     assert_warning :type => :warning,
       :warning_code => 70,

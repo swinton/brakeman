@@ -5,4 +5,9 @@ class GroupsController < ApplicationController
     new_group.save!
     redirect_to new_group
   end
+
+  def safe_command_call
+    value = Shellwords.escape(params[:value]) || nil
+    Open3.capture2("stuff", "blah", value)
+  end
 end
