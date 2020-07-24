@@ -20,26 +20,44 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
             :rules => rules,
           },
         },
+        :artifacts => artifacts,
         :results => results,
       },
     ]
   end
 
   def rules
+    @rules ||= unique_warnings.map do |warning|
+      check_name = warning.check.gsub(/^Brakeman::Check/, '')
+      check_description = check_descriptions[check_name]
+      {
+        :id => warning.warning_code.to_s,
+        :shortDescription => {
+          :text => check_description,
+        },
+        :helpUri => warning.link,
+        :properties => {
+          :warningType => warning.warning_type,
+          :checkName => check_name,
+        },
+      }
+    end
+  end
+
+  def artifacts
     # TODO
-    []
+    @artifacts ||= []
   end
 
   def results
-    all_results = convert_to_hashes all_warnings
-    all_results.map do |r|
+    @results ||= all_warnings.map do |warning|
+      rule_id = warning.warning_code.to_s
       {
-        :ruleId => '',
-        :level => '',
+        :level => 'warning',
         :message => {
-          :text => r[:message],
+          :text => warning.message.to_s,
         },
-        :locations => [
+        :locations => [ # TODO
           :physicalLocation => {
             :artifactLocation => {
               :uri => '',
@@ -51,7 +69,21 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
             }
           },
         ],
+        :ruleId => rule_id,
+        :ruleIndex => rules.index { |r| r[:id] == rule_id },
       }
     end
+  end
+
+  # Returns a hash of all check descriptions, keyed by check namne
+  def check_descriptions
+    @check_descriptions ||= Brakeman::Checks.checks.map do |check|
+      [check.name.gsub(/^Check/, ''), check.description]
+    end.to_h
+  end
+
+  # Returns a de-duplicated set of warnings, used to generate rules
+  def unique_warnings
+    @unique_warnings ||= all_warnings.uniq { |w| w.warning_code }
   end
 end
