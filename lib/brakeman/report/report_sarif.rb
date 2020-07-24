@@ -45,33 +45,44 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
   end
 
   def artifacts
-    # TODO
-    @artifacts ||= []
+    @artifacts ||= unique_locations.map do |location|
+      {
+        :location => {
+          :uri => "file://#{location}"
+        }
+      }
+    end
   end
 
   def results
     @results ||= all_warnings.map do |warning|
       rule_id = warning.warning_code.to_s
-      {
+      result = {
         :level => 'warning',
         :message => {
           :text => warning.message.to_s,
         },
-        :locations => [ # TODO
+        :locations => [
           :physicalLocation => {
             :artifactLocation => {
-              :uri => '',
-              :index => '',
+              :uri => "file://#{warning.file.absolute}",
+              :index => unique_locations.index { |l| l == warning.file.absolute },
             },
-            :region => {
-              :startLine => '',
-              :startColumn => '',
-            }
-          },
+          }
         ],
         :ruleId => rule_id,
         :ruleIndex => rules.index { |r| r[:id] == rule_id },
       }
+
+      # Include region in location where applicable
+      if warning.line.is_a? Integer
+        result[:locations][0][:physicalLocation][:region] = {
+          :startLine => warning.line,
+          :startColumn => 1,
+        }
+      end
+
+      result
     end
   end
 
@@ -85,5 +96,9 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
   # Returns a de-duplicated set of warnings, used to generate rules
   def unique_warnings
     @unique_warnings ||= all_warnings.uniq { |w| w.warning_code }
+  end
+
+  def unique_locations
+    @unique_locations ||= all_warnings.map { |w| w.file.absolute }.uniq
   end
 end
