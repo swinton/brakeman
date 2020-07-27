@@ -48,7 +48,7 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
     @artifacts ||= unique_locations.map do |location|
       {
         :location => {
-          :uri => "file://#{location}"
+          :uri => location
         }
       }
     end
@@ -65,8 +65,8 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
         :locations => [
           :physicalLocation => {
             :artifactLocation => {
-              :uri => "file://#{warning.file.absolute}",
-              :index => unique_locations.index { |l| l == warning.file.absolute },
+              :uri => warning.file.relative,
+              :index => unique_locations.index { |l| l == warning.file.relative },
             },
           }
         ],
@@ -99,6 +99,6 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
   end
 
   def unique_locations
-    @unique_locations ||= all_warnings.map { |w| w.file.absolute }.uniq
+    @unique_locations ||= all_warnings.map { |w| w.file.relative }.uniq
   end
 end
