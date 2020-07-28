@@ -32,13 +32,18 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
       check_description = check_descriptions[check_name]
       {
         :id => warning.warning_code.to_s,
+        :name => check_name,
         :shortDescription => {
+          :text => check_description,
+        },
+        :fullDescription => {
           :text => check_description,
         },
         :helpUri => warning.link,
         :properties => {
           :warningType => warning.warning_type,
           :checkName => check_name,
+          :tags => [check_name],
         },
       }
     end
