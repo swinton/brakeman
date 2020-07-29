@@ -65,9 +65,10 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
   def results
     @results ||= all_warnings.map do |warning|
       rule_id = render_id warning
+      result_level = infer_level warning
       message_text = render_message warning.message.to_s
       result = {
-        :level => 'warning',
+        :level => result_level,
         :message => {
           :text => message_text,
         },
@@ -125,5 +126,15 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
     else
       "#{message}."
     end
+  end
+
+  def infer_level warning
+    # Infer result level from warning confidence
+    levels_from_confidence = {
+      0 => 'error',    # 0 represents 'high confidence', which we infer as 'error'
+      1 => 'warning',  # 1 represents 'medium confidence' which we infer as 'warning'
+      2 => 'note',  # 2 represents 'weak, or low, confidence', which we infer as 'note'
+    }
+    levels_from_confidence[warning.confidence]
   end
 end
