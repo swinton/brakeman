@@ -17,6 +17,7 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
           :driver => {
             :name => 'Brakeman',
             :informationUri => 'https://brakemanscanner.org',
+            :semanticVersion => Brakeman::Version,
             :rules => rules,
           },
         },
