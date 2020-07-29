@@ -29,10 +29,11 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
 
   def rules
     @rules ||= unique_warnings.map do |warning|
+      rule_id = render_id warning
       check_name = warning.check.gsub(/^Brakeman::Check/, '')
       check_description = render_message check_descriptions[check_name]
       {
-        :id => warning.warning_code.to_s,
+        :id => rule_id,
         :name => "#{check_name}/#{warning.warning_type}",
         :shortDescription => {
           :text => check_description,
@@ -63,7 +64,7 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
 
   def results
     @results ||= all_warnings.map do |warning|
-      rule_id = warning.warning_code.to_s
+      rule_id = render_id warning
       message_text = render_message warning.message.to_s
       result = {
         :level => 'warning',
@@ -110,6 +111,11 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
 
   def unique_locations
     @unique_locations ||= all_warnings.map { |w| w.file.relative }.uniq
+  end
+
+  def render_id warning
+    # Include alpha prefix to provide 'compiler error' appearance
+    "BRAKE#{'%04d' % warning.warning_code}" # 46 becomes BRAKE0046, for example
   end
 
   def render_message message
