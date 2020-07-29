@@ -134,11 +134,11 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
 
   def infer_level warning
     # Infer result level from warning confidence
-    levels_from_confidence = {
+    levels_from_confidence = Hash.new('warning').update({
       0 => 'error',    # 0 represents 'high confidence', which we infer as 'error'
       1 => 'warning',  # 1 represents 'medium confidence' which we infer as 'warning'
-      2 => 'note',  # 2 represents 'weak, or low, confidence', which we infer as 'note'
-    }
+      2 => 'note',     # 2 represents 'weak, or low, confidence', which we infer as 'note'
+    })
     levels_from_confidence[warning.confidence]
   end
 end
