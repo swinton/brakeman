@@ -30,7 +30,7 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
   def rules
     @rules ||= unique_warnings.map do |warning|
       check_name = warning.check.gsub(/^Brakeman::Check/, '')
-      check_description = check_descriptions[check_name]
+      check_description = render_message check_descriptions[check_name]
       {
         :id => warning.warning_code.to_s,
         :name => warning.warning_type,
@@ -64,10 +64,11 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
   def results
     @results ||= all_warnings.map do |warning|
       rule_id = warning.warning_code.to_s
+      message_text = render_message warning.message.to_s
       result = {
         :level => 'warning',
         :message => {
-          :text => warning.message.to_s,
+          :text => message_text,
         },
         :locations => [
           :physicalLocation => {
@@ -109,5 +110,14 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
 
   def unique_locations
     @unique_locations ||= all_warnings.map { |w| w.file.relative }.uniq
+  end
+
+  def render_message message
+    # Ensure message ends with a period
+    if message.end_with? "."
+      message
+    else
+      "#{message}."
+    end
   end
 end
