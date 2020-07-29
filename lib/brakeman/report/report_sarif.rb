@@ -88,10 +88,8 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
 
       # Include region in location where applicable
       if warning.line.is_a? Integer
-        # TODO: we may be able to derive startColumn based on user_input
         result[:locations][0][:physicalLocation][:region] = {
           :startLine => warning.line,
-          :startColumn => 1,
         }
       end
 
