@@ -35,9 +35,6 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
       {
         :id => rule_id,
         :name => "#{check_name}/#{warning.warning_type}",
-        :shortDescription => {
-          :text => check_description,
-        },
         :fullDescription => {
           :text => check_description,
         },
