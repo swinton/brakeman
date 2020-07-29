@@ -42,6 +42,10 @@ class Brakeman::Report::SARIF < Brakeman::Report::JSON
           :text => check_description,
         },
         :helpUri => warning.link,
+        :help => {
+          :text => "More info: #{warning.link}",
+          :markdown => "More info: [#{warning.link}](#{warning.link})",
+        },
         :properties => {
           :warningType => warning.warning_type,
           :checkName => check_name,
